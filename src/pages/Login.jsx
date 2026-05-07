@@ -4,6 +4,7 @@ import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithP
 import { useNavigate } from 'react-router-dom';
 import { Dumbbell, Lock, Mail } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { signInWithRedirect, getRedirectResult } from 'firebase/auth';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -28,22 +29,13 @@ const Login = () => {
     }
   };
 
-  // Login con Google
-  const handleGoogleLogin = async () => {
+  const handleGoogleLogin = () => {
   try {
-    await signInWithPopup(auth, googleProvider);
-    toast.success("Accesso con Google eseguito!");
-    navigate('/');
+    // Usiamo il redirect invece del popup
+    signInWithRedirect(auth, googleProvider);
   } catch (error) {
-    // Gestiamo i casi specifici per non mostrare errori inutili
-    if (error.code === 'auth/popup-closed-by-user') {
-      toast.error("Hai chiuso la finestra senza loggarti.");
-    } else if (error.code === 'auth/cancelled-popup-request') {
-      console.log("Richiesta popup cancellata (probabile doppio click).");
-    } else {
-      console.error(error);
-      toast.error("Errore nel login con Google: " + error.message);
-    }
+    console.error("Errore Google Login:", error);
+    toast.error("Errore nell'iniziare il login");
   }
 };
 
