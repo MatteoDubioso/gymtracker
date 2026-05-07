@@ -11,35 +11,46 @@ import Statistiche from './pages/Statistiche';
 import { Toaster } from 'react-hot-toast';
 
 function App() {
-  const [utente, setUtente] = useState(null);
-  const [caricamento, setCaricamento] = useState(true);
+  // Abbiamo chiamato lo stato "user"
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Ascolta se l'utente è loggato o no
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUtente(user);
-      setCaricamento(false);
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setLoading(false);
     });
-    return unsubscribe;
+
+    return () => unsubscribe();
   }, []);
 
-  if (caricamento) return null; // Schermata bianca mentre Firebase controlla il login
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-base-100">
+        <span className="loading loading-spinner loading-lg text-primary"></span>
+      </div>
+    );
+  }
 
   return (
     <Router>
       <div className="min-h-screen bg-base-100 text-base-content">
-        
-        <Toaster position="top-center" />
+        <Toaster position="top-center" reverseOrder={false} />
       
-      <Routes>
-        {/* Se non sei loggato, vai a Login. Se sei loggato, vai alla Dashboard */}
-        <Route path="/" element={utente ? <Dashboard /> : <Navigate to="/login" />} />
-        <Route path="/login" element={!utente ? <Login /> : <Navigate to="/" />} />
-        <Route path="/scheda" element={utente ? <SchedaEditor /> : <Navigate to="/login" />} />
-        <Route path="/allenamento/:id" element={utente ? <Allenamento /> : <Navigate to="/login" />} />
-        <Route path="/statistiche" element={utente ? <Statistiche /> : <Navigate to="/login" />} />
-        <Route path="/scheda/:id" element={utente ? <SchedaEditor /> : <Navigate to="/login" />} />
-      </Routes>
+        <Routes>
+          {/* Ho corretto "utente" in "user" in tutte le rotte */}
+          <Route path="/" element={user ? <Dashboard /> : <Navigate to="/login" />} />
+          <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
+          
+          {/* Rotte protette */}
+          <Route path="/scheda" element={user ? <SchedaEditor /> : <Navigate to="/login" />} />
+          <Route path="/scheda/:id" element={user ? <SchedaEditor /> : <Navigate to="/login" />} />
+          <Route path="/allenamento/:id" element={user ? <Allenamento /> : <Navigate to="/login" />} />
+          <Route path="/statistiche" element={user ? <Statistiche /> : <Navigate to="/login" />} />
+
+          {/* Rotta di fallback: se scrivi un URL a caso, ti rimanda alla home */}
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
       </div>
     </Router>
   );

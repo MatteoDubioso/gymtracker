@@ -30,15 +30,22 @@ const Login = () => {
 
   // Login con Google
   const handleGoogleLogin = async () => {
-    try {
-      await signInWithPopup(auth, googleProvider);
-      toast.success("Accesso con Google eseguito!");
-      navigate('/');
-    } catch (error) {
+  try {
+    await signInWithPopup(auth, googleProvider);
+    toast.success("Accesso con Google eseguito!");
+    navigate('/');
+  } catch (error) {
+    // Gestiamo i casi specifici per non mostrare errori inutili
+    if (error.code === 'auth/popup-closed-by-user') {
+      toast.error("Hai chiuso la finestra senza loggarti.");
+    } else if (error.code === 'auth/cancelled-popup-request') {
+      console.log("Richiesta popup cancellata (probabile doppio click).");
+    } else {
       console.error(error);
-      toast.error("Errore nel login con Google");
+      toast.error("Errore nel login con Google: " + error.message);
     }
-  };
+  }
+};
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-base-100 text-base-content p-6">
