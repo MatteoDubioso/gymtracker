@@ -142,7 +142,22 @@ const SchedaEditor = () => {
                   onChange={(e) => handleChange(index, 'nome', e.target.value)}
                   className="input input-ghost font-black text-lg p-0 focus:bg-transparent border-b border-base-content/10 rounded-none w-10/12 focus:outline-none focus:border-primary"
                 />
-
+                {/* Selettore Modalità Esercizio */}
+                <div className="form-control w-full mb-2">
+                  <label className="label py-1">
+                    <span className="label-text-alt font-black uppercase text-base-content/40">Modalità</span>
+                  </label>
+                  <select 
+                    value={es.modalita || 'fisso'} 
+                    onChange={(e) => handleChange(index, 'modalita', e.target.value)}
+                    className="select select-bordered select-sm bg-base-100 font-bold focus:select-primary"
+                  >
+                    <option value="fisso">Carico Fisso</option>
+                    <option value="ramping">Ramping (Sali col peso)</option>
+                    <option value="backoff">Top Set + Back-off</option>
+                    <option value="piramidale">Piramidale</option>
+                  </select>
+                </div>
                 {/* Griglia Parametri */}
                 <div className="grid grid-cols-3 gap-3">
                   <div className="form-control">

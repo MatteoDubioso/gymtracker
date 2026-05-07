@@ -1,8 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { db, auth } from '../firebase'; // Aggiunto auth per il salvataggio
+import { db, auth } from '../firebase';
 import { doc, getDoc, collection, addDoc } from 'firebase/firestore';
-import { CheckCircle, ArrowLeft, Activity, Dumbbell, Info } from 'lucide-react';
+import { 
+  CheckCircle, 
+  ArrowLeft, 
+  Activity, 
+  Dumbbell, 
+  Info, 
+  TrendingUp, 
+  ChevronsUp, 
+  Target 
+} from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const Allenamento = () => {
@@ -28,7 +37,8 @@ const Allenamento = () => {
             return {
               nome: es.nome,
               targetReps: es.ripetizioni,
-              note: es.note, // Importante caricare anche le note
+              modalita: es.modalita || 'fisso', // Carichiamo la modalità
+              note: es.note,
               serieFatte: Array.from({ length: numeroSerie }, () => ({ kg: '', reps: '' }))
             };
           });
@@ -53,6 +63,8 @@ const Allenamento = () => {
   };
 
   const terminaAllenamento = async () => {
+    if (!auth.currentUser) return toast.error("Devi essere loggato!");
+    
     try {
       await addDoc(collection(db, "workout_logs"), {
         schedaId: id,
@@ -98,17 +110,60 @@ const Allenamento = () => {
           <div key={exIndex} className="card bg-base-200 border border-base-300 shadow-lg overflow-hidden">
             <div className="card-body p-5">
               
-              <div className="flex justify-between items-start mb-4">
-                <div className="flex items-center gap-2">
-                  <div className="p-2 bg-primary/10 rounded-lg text-primary">
-                    <Dumbbell className="w-5 h-5" />
+              <div className="flex flex-col mb-4">
+                <div className="flex justify-between items-start">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 bg-primary/10 rounded-lg text-primary">
+                      <Dumbbell className="w-5 h-5" />
+                    </div>
+                    <h2 className="text-xl font-black uppercase tracking-tight leading-tight">
+                      {esercizio.nome}
+                    </h2>
                   </div>
-                  <h2 className="text-xl font-black uppercase tracking-tight leading-tight">
-                    {esercizio.nome}
-                  </h2>
+                  
+                  {/* Badge della modalità */}
+                  {esercizio.modalita && (
+                    <div className={`badge badge-sm font-bold uppercase ${
+                      esercizio.modalita === 'ramping' ? 'badge-warning' : 
+                      esercizio.modalita === 'backoff' ? 'badge-secondary' : 
+                      esercizio.modalita === 'piramidale' ? 'badge-accent' : 'badge-ghost'
+                    }`}>
+                      {esercizio.modalita}
+                    </div>
+                  )}
                 </div>
-                <div className="badge badge-outline font-bold text-[10px] opacity-60 px-3">
-                  {esercizio.targetReps} REPS TARGET
+                
+                {/* Istruzioni Dinamiche */}
+                <div className="mt-3 px-1">
+                  {esercizio.modalita === 'ramping' && (
+                    <div className="flex items-center gap-2 text-[10px] text-warning font-black uppercase tracking-wider animate-pulse">
+                      <TrendingUp className="w-3 h-3" />
+                      <span>Sali col peso ogni serie fino al limite</span>
+                    </div>
+                  )}
+                  {esercizio.modalita === 'backoff' && (
+                    <div className="flex items-center gap-2 text-[10px] text-secondary font-black uppercase tracking-wider">
+                      <Activity className="w-3 h-3" />
+                      <span>1ª serie Top Set, poi scendi del 10-20%</span>
+                    </div>
+                  )}
+                  {esercizio.modalita === 'piramidale' && (
+                    <div className="flex items-center gap-2 text-[10px] text-accent font-black uppercase tracking-wider">
+                      <ChevronsUp className="w-3 h-3" />
+                      <span>Sali col peso, scendi con le reps</span>
+                    </div>
+                  )}
+                  {(esercizio.modalita === 'fisso' || !esercizio.modalita) && (
+                    <div className="flex items-center gap-2 text-[10px] text-base-content/40 font-black uppercase tracking-wider">
+                      <Target className="w-3 h-3" />
+                      <span>Mantieni lo stesso peso</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Target Reps Badge */}
+                <div className="badge badge-outline font-bold text-[10px] opacity-40 mt-3">
+                  Pianificato: {esercizio.targetReps} reps
                 </div>
               </div>
 
@@ -131,7 +186,7 @@ const Allenamento = () => {
               <div className="space-y-3">
                 {esercizio.serieFatte.map((serie, setIndex) => (
                   <div key={setIndex} className="grid grid-cols-12 gap-2 items-center bg-base-100 p-2 rounded-2xl border border-base-300/50">
-                    <div className="col-span-2 text-center font-black opacity-30">
+                    <div className="col-span-2 text-center font-black opacity-30 text-xs">
                       {setIndex + 1}
                     </div>
                     <div className="col-span-5">
