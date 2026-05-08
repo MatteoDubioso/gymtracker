@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import  { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db, auth } from '../firebase';
 import { collection, getDocs, doc, deleteDoc } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
-import { Play, TrendingUp, LogOut, Edit2, Trash2, Loader2, Dumbbell, ChevronRight } from 'lucide-react';
+import { Play, TrendingUp, LogOut, Edit2, Trash2, Dumbbell, ChevronRight } from 'lucide-react';
 
 const Dashboard = () => {
   const navigate = useNavigate();
